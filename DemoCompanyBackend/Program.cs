@@ -1,5 +1,10 @@
 var builder = WebApplication.CreateBuilder(args);
 
+/**
+ * The main entry point for the app.
+ * In here we will listen for HTTP requests.
+ */
+
 // Add services to the container.
 
 builder.Services.AddControllers();
