@@ -145,7 +145,7 @@ namespace WebApplication1.Controllers
                     // Add parameter DepartmentName which is equal to dep.DepartmentName, to safely insert the
                     // department name into the query to prevent an SQL injection.
                     myCommand.Parameters.AddWithValue("@DepartmentName", dep.DepartmentName);
-                    myCommand.ExecuteReader(); // Execute the query
+                    myCommand.ExecuteNonQuery(); // Execute the query
 
                     mycon.Close();
                 }
@@ -153,6 +153,62 @@ namespace WebApplication1.Controllers
 
             return Ok("Added Successfully");
         }
+
+        /**
+         * HTTP PUT request
+         * 
+         * This will update an existing department in a database based on the data provided in the HTTP request body.
+         * 
+         * Steps:
+         * 1. SQL Query: Define the SQL query that performs the updating of an existing department.
+         * 
+         * 2. Configuration Settings: Obtain the database connection string and other configuration settings 
+         *    from the app settings or configuration file. This information is essential for connecting to the database.
+         *    
+         * 3. Database Connection: Create and open a connection to the database using the connection string.
+         * 
+         * 4. Database Command: Create a command object (MySqlCommand) that represents the SQL query to execute. This 
+         *    command is associated with the open database connection.
+         *    
+         * 5. Execute the Query: Execute the SQL query using ExecuteNonQuery(). This method is used for SQL statements like 
+         *    UPDATE that don't return a result set but perform database modifications. The parameters' values are used to 
+         *    safely update the database record.
+         *    
+         * 6. Response: Return an appropriate response to the client. 
+         */
+        [HttpPut]
+        public IActionResult Put(Department dep)
+        {
+            // This query is an UPDATE statement that will modify an existing department in the table.
+            string query = @"
+                UPDATE Department
+                SET DepartmentName = @DepartmentName
+                WHERE DepartmentId = @DepartmentId;
+             ";
+
+            // Obtain the connection string from the configuration settings.
+            string sqlDataSource = _configuration.GetConnectionString("EmployeeAppCon");
+
+            // Connect to the databases
+            using (MySqlConnection mycon = new MySqlConnection(sqlDataSource))
+            {
+                mycon.Open();
+                
+                // Send the query to the mycon database 
+                using (MySqlCommand myCommand = new MySqlCommand(query, mycon))
+                {
+                    // Add parameters DepartmentId and DepartmentName to the command and sets their values
+                    // based on the properties of the dep object
+                    myCommand.Parameters.AddWithValue("@DepartmentId", dep.DepartmentId);
+                    myCommand.Parameters.AddWithValue("@DepartmentName", dep.DepartmentName);
+
+                    myCommand.ExecuteNonQuery(); // executes the query
+                }
+            }
+
+            return Ok("Updated Successfully");
+        }
+
 
     }
 }
