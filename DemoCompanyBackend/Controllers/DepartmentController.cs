@@ -6,6 +6,16 @@ using System.Data;
 
 namespace WebApplication1.Controllers
 {
+    /**
+     * Department API
+     * The Department API allows you to manage departments within an organization. It provides endpoints for 
+     * retrieving, creating, updating, and deleting department records in the database.
+     * 
+     * The API is designed to perform basic CRUD (Create, Read, Update, Delete) operations on department records 
+     * in the database. It uses MySQL as the data store and follows RESTful principles for its endpoints. Each 
+     * operation corresponds to a specific HTTP method and URL endpoint, making it easy to interact with the API 
+     * programmatically.
+     */
     [Route("api/[controller]")]
     [ApiController]
     public class DepartmentController : ControllerBase
@@ -209,6 +219,57 @@ namespace WebApplication1.Controllers
             return Ok("Updated Successfully");
         }
 
+        /**
+         * HTTP Delete request
+         * 
+         * This method will delete a department from the database based on the DepartmentId provided as a
+         * parameter in the request URL.
+         * 
+         * Steps:
+         * 1. SQL Query: Define the SQL query that performs the deleting of an existing department.
+         * 
+         * 2. Configuration Settings: Obtain the database connection string and other configuration settings 
+         *    from the app settings or configuration file. This information is essential for connecting to the database.
+         *    
+         * 3. Database Connection: Create and open a connection to the database using the connection string.
+         * 
+         * 4. Create a Command: Create a command object (MySqlCommand) associated with the SQL query and the open database 
+         *    connection. A parameter (@DepartmentId) is added to the command to specify which department should be deleted.
+         *    
+         * 5. Execute the Query: Execute the SQL query using ExecuteNonQuery(). This method is used for SQL statements like 
+         *    DELETE that don't return a result set but perform database modifications. The parameter's value is used to safely 
+         *    identify the department to delete.
+         *    
+         * 6. Response: Return an appropriate response to the client. 
+         */
+        [HttpDelete("{id}")] // HTTP delete with parameter id, extracted from the request's URL
+        public IActionResult Delete(int id)
+        {
+            // SQL query to delete the department from the table
+            string query = @"
+                DELETE FROM Department 
+                WHERE DepartmentId = @DepartmentId;
+            ";
 
+            // Obtain the connection string from the configuration settings.
+            string sqlDataSource = _configuration.GetConnectionString("EmployeeAppCon");
+
+            // Connect to the database
+            using (MySqlConnection mycon = new MySqlConnection(sqlDataSource))
+            {
+                mycon.Open();
+
+                // Send the query to the mycon database
+                using (MySqlCommand myCommand = new MySqlCommand(query, mycon))
+                {
+                    // Add parameter @DepartmentId to the command and set its value based on the id
+                    // parameter provided in the URL.
+                    myCommand.Parameters.AddWithValue("@DepartmentId", id);
+                    myCommand.ExecuteNonQuery();
+                }
+            }
+
+            return Ok("Deleted Successfully");
+        }
     }
 }
