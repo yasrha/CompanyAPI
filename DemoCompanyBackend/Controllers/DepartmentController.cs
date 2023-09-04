@@ -97,5 +97,62 @@ namespace WebApplication1.Controllers
             return new JsonResult(departmentList);
         }
 
+        /**
+         * HTTP Post request
+         * 
+         * Designed to insert a new department into a database using the data provided in the HTTP request body.
+         * 
+         * Steps:
+         * 1. SQL Query: Define the SQL query that performs the insertion into the database.
+         * 
+         * 2. Configuration Settings: Obtain the database connection string and other configuration settings 
+         *    from the app settings or configuration file. This information is essential for connecting to the database.
+         *    
+         * 3. Database Connection: Create and open a connection to the database using the connection string.
+         * 
+         * 4. Database Command: Create a command object (MySqlCommand) that represents the SQL query to execute. This 
+         *    command is associated with the open database connection.
+         *    
+         * 5. Set Parameters: If your SQL query includes any parameter(s), set the parameter values. This is an important 
+         *    step that can prevent potential SQL injection attacks. Parameterized queries inherently prevent SQL injection 
+         *    attacks by ensuring that user input is never executed as SQL code.
+         *    
+         * 6. Execute the Query: Execute the SQL query using ExecuteNonQuery() for an INSERT statement. This method is used 
+         *    because it doesn't return data, it just executes the query and returns the number of affected rows.
+         * 
+         * 7. Response: Return an appropriate response to the client.
+         */
+        [HttpPost]
+        public IActionResult Post(Department dep)
+        {
+            // Insert query to indicate that we will be adding a new department into the database.
+            string query = @"
+                        insert into Department (DepartmentName) values
+                                                    (@DepartmentName);  
+            ";
+
+            // Obtain the connection string from the configuration settings.
+            string sqlDataSource = _configuration.GetConnectionString("EmployeeAppCon");
+
+            // Open the database using MySqlConnection
+            using (MySqlConnection mycon = new MySqlConnection(sqlDataSource))
+            {
+                mycon.Open();
+
+                // Send the query command to the database we just connected to.
+                using (MySqlCommand myCommand = new MySqlCommand(query, mycon))
+                {
+                    // Add parameter DepartmentName which is equal to dep.DepartmentName, to safely insert the
+                    // department name into the query to prevent an SQL injection.
+                    myCommand.Parameters.AddWithValue("@DepartmentName", dep.DepartmentName);
+                    myCommand.ExecuteReader(); // Execute the query
+
+                    mycon.Close();
+                }
+            }
+
+            return Ok("Added Successfully");
+        }
+
     }
 }
