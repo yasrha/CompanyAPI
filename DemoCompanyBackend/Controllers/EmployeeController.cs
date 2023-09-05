@@ -6,6 +6,16 @@ using System.Data;
 
 namespace DemoCompanyBackend.Controllers
 {
+    /**
+     * The EmployeeController is a RESTful API controller in the DemoCompanyBackend project, responsible for 
+     * managing employee data. It interacts with a MySQL database to perform CRUD (Create, Read, Update, Delete) 
+     * operations on employee records.
+     * 
+     * The controller follows best practices for handling database connections, uses parameterized queries to 
+     * prevent SQL injection, and returns structured JSON responses. The EmployeeDto data transfer object is used 
+     * to serialize employee data to JSON, ensuring a clean separation between the database model and the API 
+     * response format.
+     */
     [Route("api/[controller]")]
     [ApiController]
     public class EmployeeController : ControllerBase
@@ -221,6 +231,61 @@ namespace DemoCompanyBackend.Controllers
             }
 
             return Ok("Updated Successfully");
+        }
+
+        /**
+        * HTTP Delete request
+        * 
+        * This method will delete an employee from the database based on the EmployeeId provided as a
+        * parameter in the request URL.
+        * 
+        * Steps:
+        * 1. SQL Query: Define the SQL query that performs the deleting of an existing employee.
+        * 
+        * 2. Configuration Settings: Obtain the database connection string and other configuration settings 
+        *    from the app settings or configuration file. This information is essential for connecting to the database.
+        *    
+        * 3. Database Connection: Create and open a connection to the database using the connection string.
+        * 
+        * 4. Create a Command: Create a command object (MySqlCommand) associated with the SQL query and the open database 
+        *    connection. A parameter (@EmployeeId) is added to the command to specify which employee should be deleted.
+        *    
+        * 5. Execute the Query: Execute the SQL query using ExecuteNonQuery(). This method is used for SQL statements like 
+        *    DELETE that don't return a result set but perform database modifications. The parameter's value is used to safely 
+        *    identify the employee to delete.
+        *    
+        * 6. Response: Return an appropriate response to the client. 
+        */
+        [HttpDelete("{id}")] // HTTP delete with parameter id, extracted from the request's URL
+        public IActionResult Delete(int id)
+        {
+            // SQL query to delete an employee
+            string query = @"
+                        delete from Employee 
+                        where EmployeeId=@EmployeeId;
+            ";
+
+            // Obtain the connection string from the configuration settings.
+            string sqlDataSource = _configuration.GetConnectionString("EmployeeAppCon");
+
+            // Connect to the database
+            using (MySqlConnection mycon = new MySqlConnection(sqlDataSource))
+            {
+                mycon.Open();
+                // Execute the query to the mycon database
+                using (MySqlCommand myCommand = new MySqlCommand(query, mycon))
+                {
+                    // Add parameter @EmployeeId to the command and set its value based on the id
+                    // parameter provided in the URL.
+                    myCommand.Parameters.AddWithValue("@EmployeeId", id);
+
+                    myCommand.ExecuteReader();
+
+                    mycon.Close();
+                }
+            }
+
+            return Ok("Deleted Successfully");
         }
 
     }
