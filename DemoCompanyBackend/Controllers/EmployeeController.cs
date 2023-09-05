@@ -133,8 +133,7 @@ namespace DemoCompanyBackend.Controllers
                         insert into Employee 
                         (EmployeeName,Department,DateOfJoining,PhotoFileName) 
                         values
-                         (@EmployeeName,@Department,@DateOfJoining,@PhotoFileName) ;
-                        
+                         (@EmployeeName,@Department,@DateOfJoining,@PhotoFileName) ; 
             ";
 
             // Obtain the connection string from the configuration settings.
@@ -161,6 +160,67 @@ namespace DemoCompanyBackend.Controllers
             }
 
             return Ok("Added Successfully");
+        }
+
+        /**
+         * HTTP PUT request
+         * 
+         * This will update an existing employee in a database based on the data provided in the HTTP request body.
+         * 
+         * Steps:
+         * 1. SQL Query: Define the SQL query that performs the updating of an existing employee.
+         * 
+         * 2. Configuration Settings: Obtain the database connection string and other configuration settings 
+         *    from the app settings or configuration file. This information is essential for connecting to the database.
+         *    
+         * 3. Database Connection: Create and open a connection to the database using the connection string.
+         * 
+         * 4. Database Command: Create a command object (MySqlCommand) that represents the SQL query to execute. This 
+         *    command is associated with the open database connection.
+         *    
+         * 5. Execute the Query: Execute the SQL query using ExecuteNonQuery(). This method is used for SQL statements like 
+         *    UPDATE that don't return a result set but perform database modifications. The parameters' values are used to 
+         *    safely update the database record.
+         *    
+         * 6. Response: Return an appropriate response to the client. 
+         */
+        [HttpPut]
+        public IActionResult Put(Employee emp)
+        {
+            // SQL query to update an employee
+            string query = @"
+                        update Employee set 
+                        EmployeeName =@EmployeeName,
+                        Department =@Department,
+                        DateOfJoining =@DateOfJoining,
+                        PhotoFileName =@PhotoFileName
+                        where EmployeeId=@EmployeeId;
+            ";
+
+            // Obtain the connection string from the configuration settings.
+            string sqlDataSource = _configuration.GetConnectionString("EmployeeAppCon");
+
+            // Connect to the database
+            using (MySqlConnection mycon = new MySqlConnection(sqlDataSource))
+            {
+                mycon.Open();
+                // Send the query to the mycon database
+                using (MySqlCommand myCommand = new MySqlCommand(query, mycon))
+                {
+                    // Update the values
+                    myCommand.Parameters.AddWithValue("@EmployeeId", emp.EmployeeId);
+                    myCommand.Parameters.AddWithValue("@EmployeeName", emp.EmployeeName);
+                    myCommand.Parameters.AddWithValue("@Department", emp.Department);
+                    myCommand.Parameters.AddWithValue("@DateOfJoining", emp.DateOfJoining);
+                    myCommand.Parameters.AddWithValue("@PhotoFileName", emp.PhotoFileName);
+
+                    myCommand.ExecuteReader(); // Execute the query
+
+                    mycon.Close();
+                }
+            }
+
+            return Ok("Updated Successfully");
         }
 
     }
