@@ -1,4 +1,4 @@
-# DemoCompanyBackendAPI
+# CompanyAPI
 
 ## Overview
 
