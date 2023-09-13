@@ -2,7 +2,7 @@
 
 ## Overview
 
-This project is a backend API for managing company departments and employees. It is developed using ASP.NET and provides a CRUD (Create, Read, Update, Delete) API for managing department and employee records.
+This project is a RESTful backend API for managing company departments and employees. It is developed using ASP.NET and provides CRUD (Create, Read, Update, Delete) operations for managing department and employee records.
 
 ## Technologies Used
 
